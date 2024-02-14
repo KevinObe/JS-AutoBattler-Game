@@ -1,4 +1,5 @@
 // game data
+let gameSwitch = false;
 const game = document.querySelector('#game');
 const viewport = document.getElementById('viewport');
 const controlUnit = document.querySelector('.controlUnit');
@@ -18,23 +19,74 @@ let gameCurrentPosition = gameStartPosition;
 
 const dialog = document.querySelector('dialog');
 const startBtn = document.querySelector('#startBtn');
-dialog.showModal();
 
-// game start / stop
+let gameInterval;
+
+// create player
 const player = {
-  id: document.createElement('div'),
-  currentPosition: playerCurrentPosition,
-  health: 100,
   range: 20,
   height: 30,
   width: 30,
-  liveTime: () => {
-    setInterval(() => {
-      if(player.health <= 0){
-        window.location.reload();
-      }
-    }, 50);
-  },
+}
+
+// create enemies
+let enemyWidth = 30;
+let enemyHeight = 30;
+
+class Enemy {
+  constructor([xAxis, yAxis]){
+    this.bottomLeft = [xAxis, yAxis];
+    this.bottomRight = [xAxis + enemyWidth, yAxis];
+    this.topLeft = [xAxis, yAxis + enemyHeight];
+    this.topRight = [xAxis + enemyWidth, yAxis + enemyHeight];
+    this.startPosition = this.bottomLeft;
+  }
+}
+
+const randomSpawnPoint = () => {
+  let x = Math.floor(Math.random() * 1960);
+  let y = Math.floor(Math.random() * 1960);
+
+  if(x > 1960 || x < 5 || y > 1960 || y < 5){
+    return [995, 1000];
+  }
+  return [x, y];
+}
+
+let enemies = []
+
+// player spwan / start game
+function spawnPlayer() {
+  if(gameSwitch){
+    player.id = document.createElement('div');
+    player.currentPosition = playerStartPosition;
+    player.health = 100;
+    player.lifeTime = () => {
+      let lifeTimeInterval = setInterval(() => {
+        if(player.health <= 0){
+          gameSwitch = false;
+          resetGame();
+          clearInterval(lifeTimeInterval)
+          return;
+        }
+      }, 50);
+    };
+    let enemieNumber = 10;
+    for(let i = 0; i <= enemieNumber; i++){
+      enemies.push(new Enemy(randomSpawnPoint()));
+    };
+    dialog.close();
+    drawPlayer();
+    spawnEnemy();
+    gameInterval = setInterval(() => {
+      getDistanceToPlayer();
+    }, 500);
+    player.lifeTime();
+    game.appendChild(player.id);
+  } else {
+    dialog.showModal();
+    return;
+  }
 }
 
 function drawPlayer() {
@@ -45,20 +97,12 @@ function drawPlayer() {
   game.style.transform = `translate(${gameCurrentPosition[0]}px, ${gameCurrentPosition[1]}px)`;
 }
 
-startBtn.addEventListener('click', spawnPlayer);
-let gameInterval;
+startBtn.addEventListener('click', () => {
+  gameSwitch = true;
+  spawnPlayer();
+});
 
-// player spwan
-function spawnPlayer() {
-  dialog.close();
-  drawPlayer();
-  spawnEnemy();
-  gameInterval = setInterval(() => {
-    getDistanceToPlayer();
-  }, 500);
-  player.liveTime();
-  game.appendChild(player.id);
-}
+
 
 //game is ready at this point
 // player movement
@@ -142,43 +186,8 @@ document.ontouchend = () => {
 
 // target hit collisions
 
-// enemy spawns
-let enemyWidth = 30;
-let enemyHeight = 30;
 
-class Enemy {
-  constructor([xAxis, yAxis]){
-    this.bottomLeft = [xAxis, yAxis];
-    this.bottomRight = [xAxis + enemyWidth, yAxis];
-    this.topLeft = [xAxis, yAxis + enemyHeight];
-    this.topRight = [xAxis + enemyWidth, yAxis + enemyHeight];
-    this.startPosition = this.bottomLeft;
-  }
-}
-
-const randomSpawnPoint = () => {
-  let x = Math.floor(Math.random() * 1960);
-  let y = Math.floor(Math.random() * 1960);
-
-  if(x > 1960 || x < 5 || y > 1960 || y < 5){
-    return [995, 1000];
-  }
-  return [x, y];
-}
-
-const enemies = [
-  new Enemy(randomSpawnPoint()),
-  new Enemy(randomSpawnPoint()),
-  new Enemy(randomSpawnPoint()),
-  new Enemy(randomSpawnPoint()),
-  new Enemy(randomSpawnPoint()),
-  new Enemy(randomSpawnPoint()),
-  new Enemy(randomSpawnPoint()),
-  new Enemy(randomSpawnPoint()),
-  new Enemy(randomSpawnPoint()),
-  new Enemy(randomSpawnPoint()),
-]
-
+//spawn enemies
 function spawnEnemy() {
   for(let i = 0; i < enemies.length; i++){
     let enemy = document.createElement('div');
@@ -368,3 +377,28 @@ function checkCollision(enemy) {
 // score counter
 
 // evaluate win or loss
+function resetGame() {
+
+  //game
+  clearInterval(gameInterval);
+  gameSwitch = false;
+
+  //player
+  player.id.remove();
+  delete player.id;
+  clearInterval(player.lifeTime);
+  delete player.lifeTime;
+
+  //enemies
+  for(const enemy of enemies) {
+    clearInterval(enemy.interval);
+    enemy.id.remove();
+  }
+  console.log(enemies)
+  enemies = [];
+
+  spawnPlayer();
+  return;
+}
+
+spawnPlayer();
