@@ -3,8 +3,6 @@ const game = document.querySelector('#game');
 const viewport = document.getElementById('viewport');
 const controlUnit = document.querySelector('.controlUnit');
 
-const elementWidth = 30;
-const elementHeight = 30;
 const gameWidth = 2000;
 const gameHeight = 2000;
 
@@ -23,16 +21,29 @@ const startBtn = document.querySelector('#startBtn');
 dialog.showModal();
 
 // game start / stop
-const player = document.createElement('div');
-player.className = 'player';
-
-function drawPlayer() {
-  player.style.left = `${playerCurrentPosition[0]}px`;
-  player.style.bottom = `${playerCurrentPosition[1]}px`;
-  viewport.style.transform = `translate(${viewportCurrentPosition[0]}px, ${viewportCurrentPosition[1]}px)`;
-  game.style.transform = `translate(${gameCurrentPosition[0]}px, ${gameCurrentPosition[1]}px)`
+const player = {
+  id: document.createElement('div'),
+  currentPosition: playerCurrentPosition,
+  health: 100,
+  range: 20,
+  height: 30,
+  width: 30,
+  liveTime: () => {
+    setInterval(() => {
+      if(player.health <= 0){
+        window.location.reload();
+      }
+    }, 50);
+  },
 }
 
+function drawPlayer() {
+  player.id.className = 'player';
+  player.id.style.left = `${playerCurrentPosition[0]}px`;
+  player.id.style.bottom = `${playerCurrentPosition[1]}px`;
+  viewport.style.transform = `translate(${viewportCurrentPosition[0]}px, ${viewportCurrentPosition[1]}px)`;
+  game.style.transform = `translate(${gameCurrentPosition[0]}px, ${gameCurrentPosition[1]}px)`;
+}
 
 startBtn.addEventListener('click', spawnPlayer);
 let gameInterval;
@@ -45,7 +56,8 @@ function spawnPlayer() {
   gameInterval = setInterval(() => {
     getDistanceToPlayer();
   }, 500);
-  game.appendChild(player);
+  player.liveTime();
+  game.appendChild(player.id);
 }
 
 //game is ready at this point
@@ -131,12 +143,15 @@ document.ontouchend = () => {
 // target hit collisions
 
 // enemy spawns
+let enemyWidth = 30;
+let enemyHeight = 30;
+
 class Enemy {
   constructor([xAxis, yAxis]){
     this.bottomLeft = [xAxis, yAxis];
-    this.bottomRight = [xAxis + elementWidth, yAxis];
-    this.topLeft = [xAxis, yAxis + elementHeight];
-    this.topRight = [xAxis + elementWidth, yAxis + elementHeight];
+    this.bottomRight = [xAxis + enemyWidth, yAxis];
+    this.topLeft = [xAxis, yAxis + enemyHeight];
+    this.topRight = [xAxis + enemyWidth, yAxis + enemyHeight];
     this.startPosition = this.bottomLeft;
   }
 }
@@ -153,6 +168,15 @@ const randomSpawnPoint = () => {
 
 const enemies = [
   new Enemy(randomSpawnPoint()),
+  new Enemy(randomSpawnPoint()),
+  new Enemy(randomSpawnPoint()),
+  new Enemy(randomSpawnPoint()),
+  new Enemy(randomSpawnPoint()),
+  new Enemy(randomSpawnPoint()),
+  new Enemy(randomSpawnPoint()),
+  new Enemy(randomSpawnPoint()),
+  new Enemy(randomSpawnPoint()),
+  new Enemy(randomSpawnPoint()),
 ]
 
 function spawnEnemy() {
@@ -168,8 +192,11 @@ function spawnEnemy() {
 // at this point the game is up and running, player and enemy spawning is done;
 
 function drawEnemy(enemy) {
-  enemy.id.style.left = `${enemy.startPosition[0]}px`;
-  enemy.id.style.bottom = `${enemy.startPosition[1]}px`;
+  enemy.id.style.left = `${enemy.bottomLeft[0]}px`;
+  enemy.id.style.bottom = `${enemy.bottomLeft[1]}px`;
+  enemy.bottomRight = [(enemy.bottomLeft[0] + enemyWidth), (enemy.bottomLeft[1])];
+  enemy.topLeft = [enemy.bottomLeft[0], (enemy.bottomLeft[1] + enemyHeight)];
+  enemy.topRight = [(enemy.bottomLeft[0] + enemyWidth), (enemy.bottomLeft[1] + enemyHeight)];
 }
 
 function moveToPlayer(enemy) {
@@ -228,27 +255,27 @@ function getDistanceToPlayer(){
     if(enemy.interval){
       clearInterval(enemy.interval);
     }
-    if(enemy.bottomLeft[1] > playerCurrentPosition[1] - elementHeight
+    if(enemy.bottomLeft[1] > playerCurrentPosition[1] - player.range
       &&
-      enemy.bottomLeft[1] < playerCurrentPosition[1] + elementHeight
+      enemy.bottomLeft[1] < playerCurrentPosition[1] + player.range
       &&
       enemy.bottomLeft[0] > playerCurrentPosition[0]){
       enemy.direction = 'left';
-    } else if(enemy.bottomLeft[1] > playerCurrentPosition[1] - elementHeight
+    } else if(enemy.bottomLeft[1] > playerCurrentPosition[1] - player.range
       &&
-      enemy.bottomLeft[1] < playerCurrentPosition[1] + elementHeight
+      enemy.bottomLeft[1] < playerCurrentPosition[1] + player.range
       &&
       enemy.bottomLeft[0] < playerCurrentPosition[0]){
       enemy.direction = 'right';
-    } else if(enemy.bottomLeft[0] < playerCurrentPosition[0] + elementWidth
+    } else if(enemy.bottomLeft[0] < playerCurrentPosition[0] + player.range
       &&
-      enemy.bottomLeft[0] > playerCurrentPosition[0] - elementWidth
+      enemy.bottomLeft[0] > playerCurrentPosition[0] - player.range
       &&
       enemy.bottomLeft[1] > playerCurrentPosition[1]){
       enemy.direction = 'down';
-    } else if(enemy.bottomLeft[0] < playerCurrentPosition[0] + elementWidth
+    } else if(enemy.bottomLeft[0] < playerCurrentPosition[0] + player.range
       &&
-      enemy.bottomLeft[0] > playerCurrentPosition[0] - elementWidth
+      enemy.bottomLeft[0] > playerCurrentPosition[0] - player.range
       &&
       enemy.bottomLeft[1] < playerCurrentPosition[1]){
       enemy.direction = 'up';
@@ -277,7 +304,6 @@ function getDistanceToPlayer(){
       //remove enemy from html and enemies array;
     }
     enemy.interval = setInterval(() => {
-      console.log(enemy.direction)
       moveToPlayer(enemy);
      }, 100);
   }
@@ -286,13 +312,57 @@ function getDistanceToPlayer(){
 // enemy collisions with map border or player character;
 
 function checkCollision(enemy) {
-  if(enemy.bottomLeft[0] < 0 || enemy.bottomLeft[0] > 1970 || enemy.bottomLeft[1] < 0 || enemy.bottomLeft[1] > 1970){
+  //keeps enemies inside the map in case the try to break out;
+  if(enemy.bottomLeft[0] < 0 || enemy.bottomLeft[0] > 2000 || enemy.bottomLeft[1] < 0 || enemy.bottomLeft[1] > 2000){
     clearInterval(enemy.interval);
     getDistanceToPlayer();
-  } else {
     return;
   }
-  console.log(enemy.bottomLeft, enemy.direction);
+
+  //logic if the enemies collide with the player;
+  if((enemy.bottomLeft[0] > playerCurrentPosition[0]
+      &&
+      (enemy.bottomLeft[0] < playerCurrentPosition[0] + player.width))
+    && (enemy.bottomLeft[1] > playerCurrentPosition[1]
+       &&
+       enemy.bottomLeft[1] < (playerCurrentPosition[1] + player.height))
+    ) {
+      console.log('collision bottomLeft')
+      player.health -= 5;
+      return;
+    } else if((enemy.topLeft[0] > playerCurrentPosition[0]
+      &&
+      (enemy.topLeft[0] < playerCurrentPosition[0] + player.width))
+    && (enemy.topLeft[1] > playerCurrentPosition[1]
+       &&
+       enemy.topLeft[1] < (playerCurrentPosition[1] + player.height))
+    )  {
+      console.log('collision topLeft')
+      player.health -= 5;
+      return;
+    } else if((enemy.bottomRight[0] > playerCurrentPosition[0]
+      &&
+      (enemy.bottomRight[0] < playerCurrentPosition[0] + player.width))
+    && (enemy.bottomRight[1] > playerCurrentPosition[1]
+       &&
+       enemy.bottomRight[1] < (playerCurrentPosition[1] + player.height))
+    )  {
+      console.log('collision bottomRight')
+      player.health -= 5;
+      return;
+    } else if((enemy.topRight[0] > playerCurrentPosition[0]
+      &&
+      (enemy.topRight[0] < playerCurrentPosition[0] + player.width))
+    && (enemy.topRight[1] > playerCurrentPosition[1]
+       &&
+       enemy.topRight[1] < (playerCurrentPosition[1] + player.height))
+    )  {
+      console.log('collision topRight')
+      player.health -= 5;
+      return;
+    } else {
+      return;
+    }
 }
 
 // score counter
