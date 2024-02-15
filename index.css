@@ -28,6 +28,12 @@
     align-items: flex-end;
   }
 
+  #score{
+    position: absolute;
+    align-self: flex-start;
+    margin-right: 225px;
+  }
+
   .player{
     position: absolute;
     height: 30px;
@@ -74,5 +80,14 @@
     width: 70px;
     height: 70px;
   }
+
+  .shots{
+    position: absolute;
+    height: 15px;
+    width: 15px;
+    background-color: black;
+    border-radius: 20px;
+  }
+
 
 }
