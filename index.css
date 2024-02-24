@@ -1,3 +1,138 @@
+@media(min-width: 427px){
+
+  body {
+    position: absolute;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  #game {
+    z-index: 0;
+    position: absolute;
+    width: 2000px; /* 100% of the container */
+    height: 2000px; /* 100% of the container */
+    background: url(ice.cream.webp);
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  #viewport {
+    background: transparent;
+    z-index: 1;
+    position: fixed;
+    width: 100vw; /* 100% of the game container */
+    height: 90vh; /* 100% of the game container */
+    overflow: hidden;
+
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+  }
+
+  .player-stats{
+    position: absolute;
+    align-self: flex-start;
+    margin-left: 100px;
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #score{
+
+  }
+
+  #health{
+
+  }
+
+  #health-bar{
+    width: 0px;
+    height: 10px;
+    background-color: red;
+  }
+
+  .player{
+    position: absolute;
+    height: 80px;
+    width: 80px;
+    background-size: cover;
+    background: url(donut.character.test.rechts.png);
+  }
+
+  .player-left{
+    position: absolute;
+    height: 80px;
+    width: 80px;
+    background-size: contain;
+    background: url(donut.character.test.png);
+  }
+
+  .enemy{
+    position: absolute;
+    height: 80px;
+    width: 50px;
+    background-size: cover;
+    background: url(ice.cream.enemy.png);
+  }
+
+  dialog{
+    position: relative;
+    top: 0;
+    left: 0;
+    height: 45px;
+    width: 30vw;
+    text-align: center;
+    background-color: lightblue;
+    overflow: hidden;
+
+    & #startBtn{
+      font-size: 2rem;
+    }
+  }
+
+  #controlUnit {
+    position: relative;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    display: none;
+  }
+
+  .arrow {
+    font-size: 20px;
+    padding: 10px;
+    margin: 5px;
+    width: 70px;
+    height: 70px;
+    display: none;
+  }
+
+  .shots{
+    position: absolute;
+    height: 15px;
+    width: 15px;
+    background-color: black;
+    border-radius: 20px;
+  }
+
+  #link{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size: 0.7rem;
+
+    & a{
+      color: black;
+    }
+
+  }
+
+}
+
 @media(max-width: 426px){
 
   body {
@@ -11,11 +146,12 @@
     position: absolute;
     width: 2000px; /* 100% of the container */
     height: 2000px; /* 100% of the container */
-    background-color: #ddd; /* Optional: Set a background color for the game */
+    background: url(ice.cream.webp);
+    background-repeat: no-repeat;
+    background-size: cover;
   }
 
   #viewport {
-    border: 3px solid red;
     background: transparent;
     z-index: 1;
     position: fixed;
@@ -28,24 +164,51 @@
     align-items: flex-end;
   }
 
-  #score{
+  .player-stats{
     position: absolute;
     align-self: flex-start;
-    margin-right: 225px;
+    margin-right: 200px;
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #score{
+
+  }
+
+  #health{
+
+  }
+
+  #health-bar{
+    width: 0px;
+    height: 10px;
+    background-color: red;
   }
 
   .player{
     position: absolute;
-    height: 30px;
-    width: 30px;
-    background-color: blue;
+    height: 80px;
+    width: 80px;
+    background-size: cover;
+    background: url(donut.character.test.rechts.png);
+  }
+
+  .player-left{
+    position: absolute;
+    height: 80px;
+    width: 80px;
+    background-size: contain;
+    background: url(donut.character.test.png);
   }
 
   .enemy{
     position: absolute;
-    height: 30px;
-    width: 30px;
-    background-color: red;
+    height: 80px;
+    width: 50px;
+    background-size: cover;
+    background: url(ice.cream.enemy.png);
   }
 
   dialog{
@@ -89,5 +252,16 @@
     border-radius: 20px;
   }
 
+  #link{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size: 0.7rem;
+
+    & a{
+      color: black;
+    }
+
+  }
 
 }
