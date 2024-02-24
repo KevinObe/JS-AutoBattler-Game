@@ -21,6 +21,7 @@ const startBtn = document.querySelector('#startBtn');
 
 const gameSettings = {
   counter: 0,
+  healthInGame: 1,
 }
 
 const gameWidth = 2000;
@@ -76,7 +77,7 @@ class Enemy {
     this.middle = [xAxis + enemyWidth / 2, yAxis + enemyHeight / 2];
     this.health = 100;
     this.protection = false;
-    this.speed = 75;
+    this.speed = 60;
     this.withinPlayerPerception = false;
   }
 }
@@ -781,6 +782,126 @@ function killEnemy(enemy){
   return;
 }
 
+//adding health to the game that can be picked up from the player;
+class Health {
+  constructor([xAxis, yAxis]){
+    this.height = 40;
+    this.width = 40;
+    this.bottomLeft = [xAxis, yAxis];
+    this.bottomRight = [xAxis + this.height, yAxis];
+    this.topLeft = [xAxis, yAxis + this.height];
+    this.topRight = [xAxis + this.width, yAxis + this.height];
+  }
+}
+
+let healthInGame = [];
+
+function createHealth(health) {
+  health.id = document.createElement('div');
+  health.id.className = 'health-regeneration';
+  health.id.style.left = `${health.bottomLeft[0]}px`;
+  health.id.style.bottom = `${health.bottomLeft[1]}px`;
+  game.appendChild(health.id);
+  health.interval = setInterval(() => {
+      checkForPlayerPickUp(health);
+    }, 30);
+};
+
+function checkForPlayerPickUp(health) {
+  let index;
+  if((health.bottomLeft[0] > playerCurrentPosition[0]
+    &&
+    (health.bottomLeft[0] < playerCurrentPosition[0] + player.width))
+  && (health.bottomLeft[1] > playerCurrentPosition[1]
+     &&
+     health.bottomLeft[1] < (playerCurrentPosition[1] + player.height))
+  ) {
+    console.log('collision bottomLeft')
+    player.health += 50;
+    if(player.health > 100){
+      player.health = 100;
+    }
+    playerHealth.style.width = `${player.health}px`;
+    index = healthInGame.findIndex((healthInGame) => healthInGame.id === health.id);
+    if(index === -1) return;
+    health.id.remove();
+    clearInterval(health.interval);
+    healthInGame.splice(index, 1);
+    health = new Health(randomSpawnPoint());
+    healthInGame.push(health);
+    createHealth(health);
+    return;
+  } else if((health.topLeft[0] > playerCurrentPosition[0]
+    &&
+    (health.topLeft[0] < playerCurrentPosition[0] + player.width))
+  && (health.topLeft[1] > playerCurrentPosition[1]
+     &&
+     health.topLeft[1] < (playerCurrentPosition[1] + player.height))
+  )  {
+    console.log('collision topLeft')
+    player.health += 50;
+    if(player.health > 100){
+      player.health = 100;
+    }
+    playerHealth.style.width = `${player.health}px`;
+    index = healthInGame.findIndex((healthInGame) => healthInGame.id === health.id);
+    if(index === -1) return;
+    health.id.remove();
+    clearInterval(health.interval);
+    healthInGame.splice(index, 1);
+    health = new Health(randomSpawnPoint());
+    healthInGame.push(health);
+    createHealth(health);
+    return;
+  } else if((health.bottomRight[0] > playerCurrentPosition[0]
+    &&
+    (health.bottomRight[0] < playerCurrentPosition[0] + player.width))
+  && (health.bottomRight[1] > playerCurrentPosition[1]
+     &&
+     health.bottomRight[1] < (playerCurrentPosition[1] + player.height))
+  )  {
+    console.log('collision bottomRight')
+    player.health += 50;
+    if(player.health > 100){
+      player.health = 100;
+    }
+    playerHealth.style.width = `${player.health}px`;
+    index = healthInGame.findIndex((healthInGame) => healthInGame.id === health.id);
+    if(index === -1) return;
+    health.id.remove();
+    clearInterval(health.interval);
+    healthInGame.splice(index, 1);
+    health = new Health(randomSpawnPoint());
+    healthInGame.push(health);
+    createHealth(health);
+    return;
+  } else if((health.topRight[0] > playerCurrentPosition[0]
+    &&
+    (health.topRight[0] < playerCurrentPosition[0] + player.width))
+  && (health.topRight[1] > playerCurrentPosition[1]
+     &&
+     health.topRight[1] < (playerCurrentPosition[1] + player.height))
+  )  {
+    console.log('collision topRight')
+    player.health += 50;
+    if(player.health > 100){
+      player.health = 100;
+    }
+    playerHealth.style.width = `${player.health}px`;
+    index = healthInGame.findIndex((healthInGame) => healthInGame.id === health.id);
+    if(index === -1) return;
+    health.id.remove();
+    clearInterval(health.interval);
+    healthInGame.splice(index, 1);
+    health = new Health(randomSpawnPoint());
+    healthInGame.push(health);
+    createHealth(health);
+    return;
+  } else {
+    return;
+  }
+}
+
 // player spwan / start game with all necessary settings;
 function spawnPlayer() {
   if(gameSwitch){
@@ -814,6 +935,12 @@ function spawnPlayer() {
     for(let i = 0; i < enemieNumber; i++){
       enemies.push(new Enemy(randomSpawnPoint()));
     };
+
+    for(let i = 0; i < gameSettings.healthInGame; i++){
+      healthInGame.push(new Health(randomSpawnPoint()));
+      createHealth(healthInGame[i]);
+    };
+
     dialog.close();
     gameSettings.counter = 0;
     score.textContent = `Score: ${gameSettings.counter}`;
@@ -852,6 +979,13 @@ function resetGame() {
   delete player.checkSurroundings;
   delete player.lifeTime;
   delete player.direction;
+
+  //health
+  for(const health of healthInGame){
+    health.id.remove();
+    clearInterval(health.interval);
+  }
+  healthInGame = [];
 
   //shots
   for(const shot of shots) {
